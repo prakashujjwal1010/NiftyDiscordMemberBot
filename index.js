@@ -12,19 +12,20 @@ const web3Socket = new Web3(new Web3.providers.WebsocketProvider("wss://goerli.i
 const contractInstance = new web3.eth.Contract(YourCollectible_ABI, YourCollectible_address);
 const contractSocketInstance = new web3Socket.eth.Contract(YourCollectible_ABI, YourCollectible_address);
 
-const handleEvents = async (tokenId) => {
+const handleEvents = async (tokenId, ownerUserID) => {
   const channels = ['nifty-discord-text', 'Nifty-Discord-Voice'];
   const roleName = 'Test Role';
   if (clientReady) {
     let guildID = await contractInstance.methods.getTokenCreatorGuildID(tokenId).call();
     console.log(guildID);
-    let ownerUserID = await contractInstance.methods.getTokenOwnerDiscordID(tokenId).call();
+    //let ownerUserID = await contractInstance.methods.getTokenOwnerDiscordID(tokenId).call();
     console.log(ownerUserID);
     const guild = await client.guilds.cache.get(guildID);
     console.log(guild);
     let textChannel = guild.channels.cache.find(c => c.name === channels[0] && c.type == "text");
     let voiceChannel = guild.channels.cache.find(c => c.name === channels[1] && c.type == "voice");
-
+    //if(guild.owne)
+    console.log(ownerUserID);
     if(textChannel){
       try {
         await textChannel.overwritePermissions([{
@@ -61,15 +62,19 @@ contractSocketInstance.events.Transfer()
 
 contractSocketInstance.events.AccessActivated()
   .on('data', function(event) {
-    console.log(event);
-    handleEvents(1);
+    const returnValues = event.returnValues;
+    console.log(returnValues);
+    console.log(returnValues.discordID.toString());
+
+    //handleEvents(1);
   })
   .on('error', console.error);
 
 contractSocketInstance.events.AccessDeactivated()
   .on('data', function(event) {
-    console.log(event);
-    handleEvents(1);
+    const returnValues = event.returnValues;
+    console.log(returnValues);
+    handleEvents(returnValues.tokenId, returnValues.discordID);
   })
   .on('error', console.error);
 
@@ -166,6 +171,11 @@ client.on("message", async (message) => {
       };
     }
 
+  }
+
+  if(command === "check-my-role"){
+    let role = await message.guild.roles.cache.find(r => r.name === "Test Role");
+    console.log(role);
   }
 
 
