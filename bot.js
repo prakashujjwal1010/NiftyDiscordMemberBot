@@ -204,7 +204,9 @@ client.on("message", async (message) => {
       //get token owner
       //const tokenOwner = await contractInstance.methods.ownerOf(tokenId).call();
       let tokenStatus = await contractInstance.methods.getTokenStatus(tokenId).call();
-      if(tokenStatus !== 1){
+      console.log(tokenStatus);
+
+      if(tokenStatus != 1){
         message.reply("ERROR! The given NFT is archived and can't be used to access NiftyDiscord Membership");
         return;
       }
